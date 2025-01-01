@@ -29,7 +29,6 @@ const funcs = [_]ziglua.FnReg{
 };
 
 pub fn registerLuaFunctions(L: *Lua) i32 {
-    L.newMetatable(api.font_type) catch return 0;
     L.setFuncs(&funcs, 0);
     L.pushValue(-1);
     L.setField(-2, "__index");

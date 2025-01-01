@@ -1,10 +1,6 @@
 const rl = @import("raylib");
 const std = @import("std");
 
-pub const FontWrapper = struct {
-    font: rl.Font
-};
-
 pub const RenderCommand = union(enum) {
     text: Text,
     rect: Rect,

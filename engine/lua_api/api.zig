@@ -8,8 +8,6 @@ const keyboard_api = @import("keyboard.zig");
 
 const Lua = ziglua.Lua;
 
-pub const font_type = "Font";
-
 const libReg = struct {
     name: [:0]const u8,
     func: ?*const fn(L: *Lua, libraryName: [:0]const u8) void
