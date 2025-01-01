@@ -27,12 +27,11 @@ fn getColor(L: *Lua, argIndex: i32, default: u8) rl.Color {
 }
 
 fn lDrawText(L: *Lua) i32 {
-    const font = L.checkUserdata(renderer.FontWrapper, 1, api.font_type);
     renderer.drawText(
         L.checkString(2), 
         @floatCast(L.checkNumber(3)), 
         @floatCast(L.checkNumber(4)), 
-        font.*.font, 
+        @as(u32,if (L.checkInteger(1) < 0) 0 else @intCast(L.checkInteger(1))), 
         @floatCast(L.checkNumber(5)), 
         getColor(L, 6, 255)
     ) catch return 0;
@@ -61,9 +60,9 @@ fn lBeginRedraw(L: *Lua) i32 {
 }
 
 const funcs = [_]ziglua.FnReg{
-    .{ .name = "draw_rect", .func = ziglua.wrap(lDrawRect) },
-    .{ .name = "draw_text", .func = ziglua.wrap(lDrawText) },
-    .{ .name = "begin_redraw", .func = ziglua.wrap(lBeginRedraw) },
+    .{ .name = "drawRect", .func = ziglua.wrap(lDrawRect) },
+    .{ .name = "drawText", .func = ziglua.wrap(lDrawText) },
+    .{ .name = "beginRedraw", .func = ziglua.wrap(lBeginRedraw) },
 };
 
 const renderer_font = @import("./renderer_font.zig");
@@ -71,5 +70,5 @@ const renderer_font = @import("./renderer_font.zig");
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {
     L.registerFns(libraryName, &funcs);
     _ = renderer_font.registerLuaFunctions(L);
-    L.setField(-2, "font");
+    L.setField(-2, "Font");
 }

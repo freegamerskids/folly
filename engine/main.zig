@@ -7,6 +7,22 @@ const lua_api = @import("./lua_api/api.zig");
 
 const Lua = ziglua.Lua;
 
+fn startLua() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
+    const alloc = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var L = try Lua.init(alloc);
+    defer L.deinit();
+
+    L.openLibs();
+    lua_api.loadLibraries(L);
+
+    lua_api.doFile(L,"editor/core/init.luau", null) catch |err| {
+        std.debug.print("lua err: {}\n", .{err});
+    };
+}
+
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
     const alloc = gpa.allocator();
@@ -22,33 +38,23 @@ pub fn main() anyerror!void {
         .window_resizable = true,
     });
 
-    //const font = rl.loadFont("./resources/JetBrainsMonoNerdFont.ttf");
-
     rl.setTargetFPS(240);
 
     try renderer.init(alloc);
     defer renderer.deinit();
 
-    var L = try Lua.init(alloc);
-    defer L.deinit();
+    _ = try std.Thread.spawn(.{}, startLua, .{});
 
-    L.openLibs();
-    lua_api.loadLibraries(L);
-
-    lua_api.doFile(L,"editor/core/init.luau", null) catch |err| {
-        std.debug.print("lua err: {}\n", .{err});
-    };
+    rl.pollInputEvents();
+    rl.enableEventWaiting();
 
     while (!rl.windowShouldClose()) {
+        renderer.processStuffCmdBuf();
+
         rl.beginDrawing();
         defer rl.endDrawing();
 
         rl.clearBackground(rl.Color.white);
-
-        //try renderer.beginRedraw();
-        //try renderer.drawText(rl.textFormat("fps: %i", .{rl.getFPS()}), 200, 220, font, 32, rl.Color.black);
-
-        //rl.drawTextEx(font, rl.textFormat("fps: %i", .{rl.getFPS()}), .{.x = 200, .y = 220}, 32, 1, rl.Color.black);
         renderer.drawFrame();
     }
 }

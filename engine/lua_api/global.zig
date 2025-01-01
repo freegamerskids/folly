@@ -1,5 +1,6 @@
 const std = @import("std");
 const ziglua = @import("ziglua");
+const rl = @import("raylib");
 
 const api = @import("api.zig");
 
@@ -22,9 +23,7 @@ fn lRequire(L: *Lua) i32 {
     if (!std.mem.eql(u8, path[0..1], "@")) { // require in cwd
         var info: ziglua.DebugInfo = undefined;
 
-        L.getInfo(1, .{
-            .s = true
-        }, &info);
+        L.getInfo(1, .{ .s = true }, &info);
 
         var dir = alloc.dupeZ(u8, info.source) catch return 0;
         defer alloc.free(dir);
@@ -62,8 +61,15 @@ fn lRequire(L: *Lua) i32 {
     return 1;
 }
 
+fn lWait(L: *Lua) i32 {
+    std.time.sleep(@as(u64, @intFromFloat((L.optNumber(1) orelse rl.getFrameTime()) * std.time.ns_per_s)));
+
+    return 0;
+}
+
 const funcs = [_]ziglua.FnReg{
     .{ .name = "require", .func = ziglua.wrap(lRequire) },
+    .{ .name = "wait", .func = ziglua.wrap(lWait) },
 };
 
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {

@@ -6,15 +6,20 @@ type Color = {
     alpha: number?
 };
 
-type Font = any;
+type FontId = number;
 
-declare renderer: {
-    font: {
-        load: (filepath: string) -> Font
+declare Renderer: {
+    Font: {
+        load: (filepath: string) -> FontId
     },
-    begin_redraw: () -> (),
-    draw_rect: (x: number, y: number, width: number, height: number, color: Color) -> (),
-    draw_text: (font: Font, text: string, x: number, y: number, font_size: number, color: Color) -> ()
+    beginRedraw: () -> (),
+    drawRect: (x: number, y: number, width: number, height: number, color: Color) -> (),
+    drawText: (font: FontId, text: string, x: number, y: number, font_size: number, color: Color) -> ()
+}
+
+declare Keyboard: {
+    pollKey: () -> number,
+    pollChar: () -> number
 }
 
 declare function require(target: string): any?

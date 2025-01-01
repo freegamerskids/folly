@@ -1,24 +1,32 @@
-local util = require("util/main")
-if util then
-    util()
+
+local font = Renderer.Font.load("./resources/JetBrainsMonoNerdFont.ttf")
+
+function makeColor(r: number, g: number, b: number, a: number)
+    return {
+        red = r,
+        green = g,
+        blue = b,
+        alpha = a
+    }
 end
 
-local main = require("@core/main")
-if main then 
-    main()
-end
+Renderer.beginRedraw()
+Renderer.drawRect(50,50,100,100,makeColor(0, 0, 0, 255))
+Renderer.drawText(font, "Hello from Luau!", 200, 220, 32, makeColor(0, 0, 0, 255))
 
-local font = renderer.font.load("./resources/JetBrainsMonoNerdFont.ttf")
-renderer.begin_redraw()
-renderer.draw_rect(50,50,100,100,{
-    red = 0,
-    green = 0,
-    blue = 0,
-    alpha = 255
-})
-renderer.draw_text(font, "Hello from Luau!", 200, 220, 32, {
-    red = 0,
-    green = 0,
-    blue = 0,
-    alpha = 255
-})
+print(os.clock())
+
+local t = coroutine.create(function()
+    while true do
+        local char = Keyboard.pollChar()
+        if char ~= 0 then
+            print(char)
+            Renderer.beginRedraw()
+            Renderer.drawText(font, string.char(char), 200, 200, 32, makeColor(0, 0, 0, 255))
+        end
+
+        wait()
+    end
+end)
+
+coroutine.resume(t)

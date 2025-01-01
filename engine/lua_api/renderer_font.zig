@@ -1,3 +1,4 @@
+const std = @import("std");
 const ziglua = @import("ziglua");
 const rl = @import("raylib");
 
@@ -8,12 +9,10 @@ const Lua = ziglua.Lua;
 
 fn lLoad(L: *Lua) i32 {
     const filename = L.checkString(1);
-    const font = L.newUserdata(renderer.FontWrapper);
-    _ = L.getMetatableRegistry(api.font_type);
-    L.setMetatable(-2);
-
-    font.*.font = rl.loadFont(filename);
-
+    
+    const fontId = renderer.loadFont(filename) catch return 0;
+    L.pushInteger(@intCast(fontId));
+    
     return 1;
 }
 
@@ -27,7 +26,6 @@ fn lLoad(L: *Lua) i32 {
 const funcs = [_]ziglua.FnReg{
     //.{ .name = "__gc", .func = ziglua.wrap(lGc) },
     .{ .name = "load", .func = ziglua.wrap(lLoad) },
-    //.{ .name = null, .func = null }
 };
 
 pub fn registerLuaFunctions(L: *Lua) i32 {
