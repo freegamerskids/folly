@@ -1,0 +1,26 @@
+.{
+    .name = "fxd",
+
+    .version = "0.0.1",
+
+    .minimum_zig_version = "0.14.0-dev.2546+0ff0bdb4a",
+
+    .dependencies = .{
+        .@"raylib-zig" = .{
+            .url = "git+https://github.com/freegamerskids/raylib-zig?ref=devel#a0fefb48d17af641242ed9df3b995550055eec86",
+            .hash = "1220aac048f580b64c71c2afe8d19ca4b2e94a8a47a2153ca40507d46d311f509b04",
+        },
+        .ziglua = .{
+            .url = "git+https://github.com/freegamerskids/ziglua?ref=main#7646ed9fa002ea19d9d13557800ddf49f35ee43d",
+            .hash = "122040ff57e26a979dc0904aaf07e08f10389620609283cabe282b787a05e8fa8899",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        // For example...
+        //"LICENSE",
+        //"README.md",
+    },
+}
