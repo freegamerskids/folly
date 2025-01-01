@@ -34,6 +34,7 @@ pub const StuffCommand = union(enum) {
 
 var alloc: ?std.mem.Allocator = null;
 
+// TODO: double buffer???
 var renCmdBuf: ?std.ArrayList(RenderCommand) = null;
 var stuffCmdBuf: ?std.ArrayList(StuffCommand) = null;
 

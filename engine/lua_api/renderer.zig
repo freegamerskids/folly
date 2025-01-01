@@ -59,10 +59,26 @@ fn lBeginRedraw(L: *Lua) i32 {
     return 0;
 }
 
+fn lGetFPS(L: *Lua) i32 {
+    L.pushNumber(@as(f64,@floatFromInt(rl.getFPS())));
+
+    return 1;
+}
+
+fn lSetFPS(L: *Lua) i32 {
+    const fps = L.checkInteger(1);
+
+    rl.setTargetFPS(fps);
+
+    return 0;
+}
+
 const funcs = [_]ziglua.FnReg{
     .{ .name = "drawRect", .func = ziglua.wrap(lDrawRect) },
     .{ .name = "drawText", .func = ziglua.wrap(lDrawText) },
     .{ .name = "beginRedraw", .func = ziglua.wrap(lBeginRedraw) },
+    .{ .name = "getFPS", .func = ziglua.wrap(lGetFPS) },
+    .{ .name = "setFPS", .func = ziglua.wrap(lSetFPS) },
 };
 
 const renderer_font = @import("./renderer_font.zig");
@@ -70,5 +86,5 @@ const renderer_font = @import("./renderer_font.zig");
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {
     L.registerFns(libraryName, &funcs);
     _ = renderer_font.registerLuaFunctions(L);
-    L.setField(-2, "Font");
+    L.setField(-1, "Font");
 }

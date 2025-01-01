@@ -14,7 +14,9 @@ declare Renderer: {
     },
     beginRedraw: () -> (),
     drawRect: (x: number, y: number, width: number, height: number, color: Color) -> (),
-    drawText: (font: FontId, text: string, x: number, y: number, font_size: number, color: Color) -> ()
+    drawText: (font: FontId, text: string, x: number, y: number, font_size: number, color: Color) -> (),
+    getFPS: () -> number,
+    setFPS: (fps: number) -> ()
 }
 
 declare Keyboard: {

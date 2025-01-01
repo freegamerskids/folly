@@ -38,7 +38,7 @@ pub fn main() anyerror!void {
         .window_resizable = true,
     });
 
-    rl.setTargetFPS(240);
+    rl.setTargetFPS(60);
 
     try renderer.init(alloc);
     defer renderer.deinit();
