@@ -1,5 +1,5 @@
 .{
-    .name = "fxd",
+    .name = "folly",
 
     .version = "0.0.1",
 

@@ -31,7 +31,7 @@ pub fn main() anyerror!void {
     const screenWidth = 800;
     const screenHeight = 450;
 
-    rl.initWindow(screenWidth, screenHeight, "fxd");
+    rl.initWindow(screenWidth, screenHeight, "folly");
     defer rl.closeWindow();
 
     rl.setWindowState(.{
