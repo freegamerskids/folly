@@ -51,10 +51,10 @@ fn lDrawRect(L: *Lua) i32 {
     return 0;
 }
 
-fn lBeginRedraw(L: *Lua) i32 {
+fn lEndRedraw(L: *Lua) i32 {
     _ = L;
 
-    renderer.beginRedraw() catch return 0;
+    renderer.endRedraw();
 
     return 0;
 }
@@ -76,7 +76,7 @@ fn lSetFPS(L: *Lua) i32 {
 const funcs = [_]ziglua.FnReg{
     .{ .name = "drawRect", .func = ziglua.wrap(lDrawRect) },
     .{ .name = "drawText", .func = ziglua.wrap(lDrawText) },
-    .{ .name = "beginRedraw", .func = ziglua.wrap(lBeginRedraw) },
+    .{ .name = "endRedraw", .func = ziglua.wrap(lEndRedraw) },
     .{ .name = "getFPS", .func = ziglua.wrap(lGetFPS) },
     .{ .name = "setFPS", .func = ziglua.wrap(lSetFPS) },
 };

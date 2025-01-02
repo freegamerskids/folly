@@ -34,8 +34,12 @@ pub const StuffCommand = union(enum) {
 
 var alloc: ?std.mem.Allocator = null;
 
-// TODO: double buffer???
-var renCmdBuf: ?std.ArrayList(RenderCommand) = null;
+var drawCmdBuf: ?std.ArrayList(RenderCommand) = null;
+var redrawCmdBuf: ?std.ArrayList(RenderCommand) = null;
+
+var activeBuf: ?*std.ArrayList(RenderCommand) = null;
+var passiveBuf: ?*std.ArrayList(RenderCommand) = null;
+
 var stuffCmdBuf: ?std.ArrayList(StuffCommand) = null;
 
 var fontList: ?std.ArrayList(rl.Font) = null;
@@ -43,16 +47,23 @@ var fontList: ?std.ArrayList(rl.Font) = null;
 pub fn init(allocator: std.mem.Allocator) !void {
     alloc = allocator;
     
-    renCmdBuf = std.ArrayList(RenderCommand).init(allocator);
+    drawCmdBuf = std.ArrayList(RenderCommand).init(allocator);
+    redrawCmdBuf = std.ArrayList(RenderCommand).init(allocator);
+
+    passiveBuf = &(drawCmdBuf.?);
+    activeBuf = &(redrawCmdBuf.?);
+
     stuffCmdBuf = std.ArrayList(StuffCommand).init(allocator);
 
     fontList = std.ArrayList(rl.Font).init(allocator);
 }
 
 pub fn deinit() void {
-    if (renCmdBuf == null) @panic("Command buffer not initialized!");
+    if (drawCmdBuf == null) @panic("Command buffer not initialized!");
     
-    renCmdBuf.?.deinit();
+    drawCmdBuf.?.deinit();
+    redrawCmdBuf.?.deinit();
+
     stuffCmdBuf.?.deinit();
 
     fontList.?.deinit();
@@ -61,7 +72,7 @@ pub fn deinit() void {
 pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, fontSize: f32, color: rl.Color) !void {
     if (alloc == null) @panic("Allocator not initialized!");
 
-    try renCmdBuf.?.append(RenderCommand {
+    try activeBuf.?.*.append(RenderCommand {
         .text = .{
             .content = content,
             .x = x, .y = y,
@@ -74,7 +85,7 @@ pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, fontSize: f
 pub fn drawRect(x: i32, y: i32, width: i32, height: i32, color: rl.Color) !void {
     if (alloc == null) @panic("Allocator not initialized!");
 
-    try renCmdBuf.?.append(RenderCommand {
+    try activeBuf.?.*.append(RenderCommand {
         .rect = .{
             .x = x, .y = y,
             .width = width, .height = height,
@@ -83,10 +94,12 @@ pub fn drawRect(x: i32, y: i32, width: i32, height: i32, color: rl.Color) !void 
     });
 }
 
-pub fn beginRedraw() !void {
+pub fn endRedraw() void {
     if (alloc == null) @panic("Allocator not initialized!");
 
-    renCmdBuf.?.clearAndFree();
+    std.mem.swap(*std.ArrayList(RenderCommand), &(passiveBuf.?), &(activeBuf.?));
+
+    activeBuf.?.*.clearAndFree();
 }
 
 var loadedFonts: u32 = 0;
@@ -106,7 +119,7 @@ pub fn loadFont(filename: [:0]const u8) !u32 {
 }
 
 pub fn drawFrame() void {
-    for (renCmdBuf.?.items) |command| {
+    for (passiveBuf.?.*.items) |command| {
         switch (command) {
             .text => |cmd| {
                 rl.drawTextEx(

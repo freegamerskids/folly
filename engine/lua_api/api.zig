@@ -5,6 +5,7 @@ const ziglua = @import("ziglua");
 const globals = @import("global.zig");
 const renderer_api = @import("renderer.zig");
 const keyboard_api = @import("keyboard.zig");
+const app_api = @import("app.zig");
 
 const Lua = ziglua.Lua;
 
@@ -17,6 +18,7 @@ const libraries = [_]libReg{
     .{ .name = "Global", .func = globals.registerLuaFunctions },
     .{ .name = "Renderer", .func = renderer_api.registerLuaFunctions },
     .{ .name = "Keyboard", .func = keyboard_api.registerLuaFunctions },
+    .{ .name = "App", .func = app_api.registerLuaFunctions },
 };
 
 pub fn loadLibraries(L: *Lua) void {
