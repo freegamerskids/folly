@@ -1,20 +1,7 @@
+local util = require("util/main")
+local kc = require("util/keycodes")
 
-local font = Renderer.Font.load("./resources/JetBrainsMonoNerdFont.ttf")
-
-function makeColor(r: number, g: number, b: number, a: number)
-    return {
-        red = r,
-        green = g,
-        blue = b,
-        alpha = a
-    }
-end
-
-Renderer.drawRect(50,50,100,100,makeColor(0, 0, 0, 255))
-Renderer.drawText(font, "Hello from Luau!", 200, 220, 32, makeColor(0, 0, 0, 255))
-Renderer.endRedraw()
-
-print(os.clock())
+local font = Renderer.Font.load("./resources/JetBrainsMono-Regular.ttf")
 
 local buf = ""
 
@@ -24,8 +11,19 @@ App.setMainLoop(function()
         buf ..= string.char(char)
     end
 
-    Renderer.drawText(font, buf, 200, 200, 32, makeColor(0, 0, 0, 255))
-    Renderer.drawText(font, "fps: "..Renderer.getFPS(), 300, 100, 32, makeColor(0, 0, 0, 255))
+    local key = Keyboard.pollKey()
+    if key ~= 0 then
+        if key == kc.backspace then
+            buf = buf:sub(1,-2)
+        elseif key == kc.enter then
+            buf ..= "\n"
+        elseif key == kc.tab then
+            buf ..= string.rep(" ", 4)
+        end
+    end
+
+    Renderer.drawText(font, buf, 20, 20, 32, util:MakeColor(0, 0, 0, 255))
+    Renderer.drawText(font, "fps: "..App.getFPS(), App.getScreenWidth() - 108, 20, 12, util:MakeColor(0, 0, 0, 255))
 
     return true
-end);
+end)
