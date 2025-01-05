@@ -15,8 +15,6 @@ declare Renderer: {
     endRedraw: () -> (),
     drawRect: (x: number, y: number, width: number, height: number, color: Color) -> (),
     drawText: (font: FontId, text: string, x: number, y: number, font_size: number, color: Color) -> (),
-    getFPS: () -> number,
-    setFPS: (fps: number) -> ()
 }
 
 declare Keyboard: {
@@ -26,7 +24,11 @@ declare Keyboard: {
 
 declare App: {
     --- returns true if redraw
-    setMainLoop: (func: () -> boolean) -> ()
+    setMainLoop: (func: () -> boolean) -> (),
+    getFPS: () -> number,
+    setFPS: (fps: number) -> (),
+    getScreenWidth: () -> number,
+    getScreenHeight: () -> number,
 }
 
-declare function require(target: string): any?
+declare function require(target: string): any

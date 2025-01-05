@@ -59,26 +59,10 @@ fn lEndRedraw(L: *Lua) i32 {
     return 0;
 }
 
-fn lGetFPS(L: *Lua) i32 {
-    L.pushNumber(@as(f64,@floatFromInt(rl.getFPS())));
-
-    return 1;
-}
-
-fn lSetFPS(L: *Lua) i32 {
-    const fps = L.checkInteger(1);
-
-    rl.setTargetFPS(fps);
-
-    return 0;
-}
-
 const funcs = [_]ziglua.FnReg{
     .{ .name = "drawRect", .func = ziglua.wrap(lDrawRect) },
     .{ .name = "drawText", .func = ziglua.wrap(lDrawText) },
     .{ .name = "endRedraw", .func = ziglua.wrap(lEndRedraw) },
-    .{ .name = "getFPS", .func = ziglua.wrap(lGetFPS) },
-    .{ .name = "setFPS", .func = ziglua.wrap(lSetFPS) },
 };
 
 const renderer_font = @import("./renderer_font.zig");
