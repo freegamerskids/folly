@@ -16,14 +16,18 @@ pub fn main() anyerror!void {
     const screenWidth = 800;
     const screenHeight = 450;
 
+    rl.setConfigFlags(.{
+        .vsync_hint = true,
+        .msaa_4x_hint = true,
+        .window_highdpi = true,
+    });
+
     rl.initWindow(screenWidth, screenHeight, "folly");
     defer rl.closeWindow();
 
     rl.setWindowState(.{
         .window_resizable = true,
     });
-
-    rl.setTargetFPS(60);
 
     try renderer.init(alloc);
     defer renderer.deinit();
