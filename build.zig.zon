@@ -3,7 +3,7 @@
 
     .version = "0.0.1",
 
-    .minimum_zig_version = "0.14.0-dev.2546+0ff0bdb4a",
+    .minimum_zig_version = "0.14.0-dev.2596+e6879e99e",
 
     .dependencies = .{
         .@"raylib-zig" = .{
