@@ -25,27 +25,22 @@ fn lRequire(L: *Lua) i32 {
 
         L.getInfo(1, .{ .s = true }, &info);
 
-        var dir = alloc.dupeZ(u8, info.source) catch return 0;
-        defer alloc.free(dir);
+        const full_src_path = alloc.dupeZ(u8, info.source) catch return 0;
+        defer alloc.free(full_src_path);
 
-        if (std.mem.lastIndexOf(u8, dir, "/")) |last_slash_pos| {
-            const trimmed = dir[0..last_slash_pos];
-
-            const dirZ = alloc.dupeZ(u8, trimmed) 
-                catch |err| return make_lua_err("dupeZ dirZ", err);
-            defer alloc.free(dirZ);
+        const dir = std.fs.path.dirname(full_src_path).?;
             
-            const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}/{s}.luau", .{ dirZ, path }) 
-                catch |err| return make_lua_err("allocPrintZ full_path cwd", err);
-            defer alloc.free(full_path);
+        const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}/{s}.luau", .{ dir, path }) 
+            catch |err| return make_lua_err("allocPrintZ full_path cwd", err);
+        defer alloc.free(full_path);
 
-            api.doFile(L, full_path, .{
-                .args = 0,
-                .results = 1,
-                .msg_handler = 0
-            }) catch |err| return make_lua_err("dofile cwd", err);
-            return 1;
-        }
+        api.doFile(L, full_path, .{
+            .args = 0,
+            .results = 1,
+            .msg_handler = 0
+        }) catch |err| return make_lua_err("dofile cwd", err);
+        
+        return 1;
     }
 
     const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}.luau", .{ path[1..] }) 

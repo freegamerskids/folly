@@ -54,7 +54,7 @@ fn lGetWindowSize(L: *Lua) i32 {
     L.pushInteger(rl.getScreenWidth());
     L.pushInteger(rl.getScreenHeight());
 
-    return 1;
+    return 2;
 }
 
 const funcs = [_]ziglua.FnReg{
