@@ -4,7 +4,7 @@ const ziglua = @import("ziglua");
 // LIBRARIES
 const globals = @import("global.zig");
 const renderer_api = @import("renderer.zig");
-const keyboard_api = @import("keyboard.zig");
+const input_api = @import("input.zig");
 const app_api = @import("app.zig");
 
 const Lua = ziglua.Lua;
@@ -17,7 +17,7 @@ const libReg = struct {
 const libraries = [_]libReg{
     .{ .name = "Global", .func = globals.registerLuaFunctions },
     .{ .name = "Renderer", .func = renderer_api.registerLuaFunctions },
-    .{ .name = "Keyboard", .func = keyboard_api.registerLuaFunctions },
+    .{ .name = "Input", .func = input_api.registerLuaFunctions },
     .{ .name = "App", .func = app_api.registerLuaFunctions },
 };
 

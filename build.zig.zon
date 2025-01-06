@@ -3,7 +3,7 @@
 
     .version = "0.0.1",
 
-    .minimum_zig_version = "0.14.0-dev.2596+e6879e99e",
+    .minimum_zig_version = "0.14.0-dev.2606+b039a8b61",
 
     .dependencies = .{
         .@"raylib-zig" = .{
@@ -18,9 +18,6 @@
     .paths = .{
         "build.zig",
         "build.zig.zon",
-        "src",
-        // For example...
-        //"LICENSE",
-        //"README.md",
+        "engine",
     },
 }

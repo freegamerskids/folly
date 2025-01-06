@@ -50,13 +50,8 @@ fn lSetFPS(L: *Lua) i32 {
     return 0;
 }
 
-fn lGetScreenWidth(L: *Lua) i32 {
+fn lGetWindowSize(L: *Lua) i32 {
     L.pushInteger(rl.getScreenWidth());
-
-    return 1;
-}
-
-fn lGetScreenHeight(L: *Lua) i32 {
     L.pushInteger(rl.getScreenHeight());
 
     return 1;
@@ -66,8 +61,7 @@ const funcs = [_]ziglua.FnReg{
     .{ .name = "setMainLoop", .func = ziglua.wrap(lSetMainLoop) },
     .{ .name = "getFPS", .func = ziglua.wrap(lGetFPS) },
     .{ .name = "setFPS", .func = ziglua.wrap(lSetFPS) },
-    .{ .name = "getScreenWidth", .func = ziglua.wrap(lGetScreenWidth) },
-    .{ .name = "getScreenHeight", .func = ziglua.wrap(lGetScreenHeight) }
+    .{ .name = "getWindowSize", .func = ziglua.wrap(lGetWindowSize) },
 };
 
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {

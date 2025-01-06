@@ -20,6 +20,6 @@ const funcs = [_]ziglua.FnReg{
     .{ .name = "pollChar", .func = ziglua.wrap(lPollChar) },
 };
 
-pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {
-    L.registerFns(libraryName, &funcs);
+pub fn registerLuaFunctions(L: *Lua) void {
+    L.registerFns(null, &funcs);
 }

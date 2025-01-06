@@ -17,9 +17,15 @@ declare Renderer: {
     drawText: (font: FontId, text: string, x: number, y: number, font_size: number, color: Color) -> (),
 }
 
-declare Keyboard: {
-    pollKey: () -> number,
-    pollChar: () -> number
+declare Input: {
+    Keyboard: {
+        pollKey: () -> number,
+        pollChar: () -> number
+    },
+    Mouse: {
+        getPosition: () -> (number, number),
+        getWheelMove: () -> (number, number)
+    }
 }
 
 declare App: {
@@ -27,8 +33,7 @@ declare App: {
     setMainLoop: (func: () -> boolean) -> (),
     getFPS: () -> number,
     setFPS: (fps: number) -> (),
-    getScreenWidth: () -> number,
-    getScreenHeight: () -> number,
+    getWindowSize: () -> (number, number),
 }
 
 declare function require(target: string): any
