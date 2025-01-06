@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  - push
+  - pull_request
+
+env:
+  ZIG_VERSION: "0.14.0-dev.2599+ff4f2753e"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Zig
+        run: |
+          sudo apt install xz-utils
+          sudo sh -c 'wget -c https://zigmirror.hryx.net/zig/zig-linux-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
+      - name: Build
+        run: zig build -Doptimize=ReleaseSafe
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Zig
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "https://zigmirror.hryx.net/zig/zig-windows-x86_64-${{ env.ZIG_VERSION }}.zip" -OutFile "C:\zig.zip"
+          cd C:\
+          7z x zig.zip
+          Add-Content $env:GITHUB_PATH "C:\zig-windows-x86_64-${{ env.ZIG_VERSION }}\"
+      - name: Build
+        run: zig build -Doptimize=ReleaseSafe
+  build-macos:
+    runs-on: macos-12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Zig
+        run: |
+          brew install xz
+          sudo sh -c 'wget -c https://zigmirror.hryx.net/zig/zig-macos-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
+      - name: Build
+        run: zig build -Doptimize=ReleaseSafe
+        env:
+          AGREE: true
