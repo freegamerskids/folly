@@ -6,6 +6,7 @@ const globals = @import("global.zig");
 const renderer_api = @import("renderer.zig");
 const input_api = @import("input.zig");
 const app_api = @import("app.zig");
+const file_api = @import("file.zig");
 
 const Lua = ziglua.Lua;
 
@@ -19,6 +20,7 @@ const libraries = [_]libReg{
     .{ .name = "Renderer", .func = renderer_api.registerLuaFunctions },
     .{ .name = "Input", .func = input_api.registerLuaFunctions },
     .{ .name = "App", .func = app_api.registerLuaFunctions },
+    .{ .name = "File", .func = file_api.registerLuaFunctions },
 };
 
 pub fn loadLibraries(L: *Lua) void {
@@ -83,4 +85,9 @@ pub fn doFile(L: *Lua, filename: [:0]const u8, pcall_args: ?Lua.ProtectedCallArg
     } else {
         try doBytecode(L, alloc, chunkname, bytecode, args);
     }
+}
+
+pub fn make_lua_err(func: [:0]const u8, err: anytype) i32 {
+    std.debug.print("lua_err in func {s}: {any}\n", .{func, err});
+    return 0;
 }

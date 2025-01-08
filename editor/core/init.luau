@@ -3,7 +3,7 @@ local kc = require("util/keycodes")
 
 local font = Renderer.Font.load("./resources/JetBrainsMono-Regular.ttf")
 
-local buf = ""
+local buf = File.read("./editor/init.luau"):gsub("\r", "")
 
 App.setMainLoop(function()
     local char = Input.Keyboard.pollChar()

@@ -36,4 +36,9 @@ declare App: {
     getWindowSize: () -> (number, number),
 }
 
+declare File: {
+    read: (path: string) -> string,
+    write: (path: string, contents: string) -> ()
+}
+
 declare function require(target: string): any
