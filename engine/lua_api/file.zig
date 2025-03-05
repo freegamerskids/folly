@@ -19,7 +19,7 @@ fn lReadFile(L: *Lua) i32 {
 
     const file = std.fs.openFileAbsolute(realPath, .{}) catch return 0;
 
-    const fileContents = file.readToEndAlloc(alloc, 1_024*1_024) catch return 0; // 1 GiB
+    const fileContents = file.readToEndAlloc(alloc, 1_024*1_024*1_024) catch return 0; // 1 GiB
     defer alloc.free(fileContents);
 
     _ = L.pushString(fileContents);

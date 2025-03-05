@@ -31,8 +31,8 @@ fn lDrawText(L: *Lua) i32 {
         L.checkString(2), 
         @floatCast(L.checkNumber(3)), 
         @floatCast(L.checkNumber(4)), 
-        @as(u32,if (L.checkInteger(1) < 0) 0 else @intCast(L.checkInteger(1))), 
-        @floatCast(L.checkNumber(5)), 
+        @as(u32,if (L.checkInteger(1) < 0) 0 else @intCast(L.checkInteger(1))),
+        @intFromFloat(L.checkNumber(5)),
         getColor(L, 6, 255)
     ) catch return 0;
 

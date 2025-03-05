@@ -16,19 +16,19 @@ pub fn build(b: *std.Build) void {
     });
 
     // Raylib (via raylib-zig)
-    const raylib_dep = b.dependency("raylib-zig", .{
+    const raylib_dep = b.dependency("raylib_zig", .{
         .target = target,
         .optimize = optimize,
         .opengl_version = .auto,
     });
 
     const raylib = raylib_dep.module("raylib");
-    const raygui = raylib_dep.module("raygui"); 
+    //const raygui = raylib_dep.module("raygui"); 
     const raylib_artifact = raylib_dep.artifact("raylib");
 
     exe.linkLibrary(raylib_artifact);
     exe_mod.addImport("raylib", raylib);
-    exe_mod.addImport("raygui", raygui);
+    //exe_mod.addImport("raygui", raygui);
 
     // Luau (via Ziglua)
     const ziglua = b.dependency("ziglua", .{
@@ -38,6 +38,15 @@ pub fn build(b: *std.Build) void {
     });
 
     exe_mod.addImport("ziglua", ziglua.module("ziglua"));
+
+    // Freetype and Harfbuzz (via mach_freetype)
+    const freetype_dep = b.dependency("mach_freetype", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe_mod.addImport("freetype", freetype_dep.module("mach-freetype"));
+    exe_mod.addImport("harfbuzz", freetype_dep.module("mach-harfbuzz"));
 
     b.installArtifact(exe);
 

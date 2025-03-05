@@ -1,16 +1,15 @@
 const rl = @import("raylib");
 const std = @import("std");
+const freetype = @import("freetype");
+
+const fRenderer = @import("font_renderer.zig");
 
 pub const RenderCommand = union(enum) {
     text: Text,
     rect: Rect,
 
     pub const Text = struct {
-        content: [*:0]const u8,
-        x: f32,
-        y: f32,
-        fontId: u32,
-        fontSize: f32,
+        text: fRenderer.Text,
         color: rl.Color,
     };
 
@@ -23,15 +22,6 @@ pub const RenderCommand = union(enum) {
     };
 };
 
-// TODO: call this better (its 11 pm and i wanna sleep)
-pub const StuffCommand = union(enum) {
-    font: Font,
-
-    pub const Font = struct {
-        filename: [:0]const u8,
-    };
-};
-
 var alloc: ?std.mem.Allocator = null;
 
 var drawCmdBuf: ?std.ArrayList(RenderCommand) = null;
@@ -39,10 +29,6 @@ var redrawCmdBuf: ?std.ArrayList(RenderCommand) = null;
 
 var activeBuf: ?*std.ArrayList(RenderCommand) = null;
 var passiveBuf: ?*std.ArrayList(RenderCommand) = null;
-
-var stuffCmdBuf: ?std.ArrayList(StuffCommand) = null;
-
-var fontList: ?std.ArrayList(rl.Font) = null;
 
 pub fn init(allocator: std.mem.Allocator) !void {
     alloc = allocator;
@@ -52,10 +38,6 @@ pub fn init(allocator: std.mem.Allocator) !void {
 
     passiveBuf = &(drawCmdBuf.?);
     activeBuf = &(redrawCmdBuf.?);
-
-    stuffCmdBuf = std.ArrayList(StuffCommand).init(allocator);
-
-    fontList = std.ArrayList(rl.Font).init(allocator);
 }
 
 pub fn deinit() void {
@@ -64,20 +46,19 @@ pub fn deinit() void {
     drawCmdBuf.?.deinit();
     redrawCmdBuf.?.deinit();
 
-    stuffCmdBuf.?.deinit();
-
-    fontList.?.deinit();
+    fRenderer.deinitFonts();
 }
 
-pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, fontSize: f32, color: rl.Color) !void {
+pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, size: u32, color: rl.Color) !void {
     if (alloc == null) @panic("Allocator not initialized!");
+    
+    var text = try fRenderer.Text.init(alloc.?);
+    try text.setText(fontId, std.mem.span(content), .{ .x = x, .y = y }, size);
 
     try activeBuf.?.*.append(RenderCommand {
         .text = .{
-            .content = content,
-            .x = x, .y = y,
-            .fontId = fontId, .fontSize = fontSize,
-            .color = color,
+            .text = text,
+            .color = color
         }
     });
 }
@@ -99,37 +80,29 @@ pub fn endRedraw() void {
 
     std.mem.swap(*std.ArrayList(RenderCommand), &(passiveBuf.?), &(activeBuf.?));
 
+    for (activeBuf.?.*.items) |command| {
+        if (command == .text) {
+            var text = command.text.text;
+            text.deinit();
+        }
+    }
+
     activeBuf.?.*.clearAndFree();
 }
-
-var loadedFonts: u32 = 0;
 
 pub fn loadFont(filename: [:0]const u8) !u32 {
     if (alloc == null) @panic("Allocator not initialized!");
 
-    try stuffCmdBuf.?.append(StuffCommand {
-        .font = .{
-            .filename = filename
-        }
-    });
+    const i = try fRenderer.loadFont(filename.ptr);
 
-    loadedFonts += 1;
-
-    return loadedFonts - 1;
+    return i;
 }
 
 pub fn drawFrame() void {
     for (passiveBuf.?.*.items) |command| {
         switch (command) {
             .text => |cmd| {
-                rl.drawTextEx(
-                    if (cmd.fontId + 1 > fontList.?.items.len) rl.getFontDefault() else fontList.?.items[cmd.fontId],
-                    cmd.content,
-                    .{ .x = cmd.x, .y = cmd.y },
-                    cmd.fontSize,
-                    1, // spacing
-                    cmd.color
-                );
+                cmd.text.draw(cmd.color);
             },
             .rect => |cmd| {
                 rl.drawRectangle(
@@ -140,17 +113,4 @@ pub fn drawFrame() void {
             }
         }
     }
-}
-
-pub fn processStuffCmdBuf() void {
-    for (stuffCmdBuf.?.items) |command| {
-        switch (command) {
-            .font => |cmd| {
-                const rlFont = rl.loadFont(cmd.filename);
-                fontList.?.append(rlFont) catch continue; // FIXME: this is dangerous
-            }
-        }
-    }
-
-    stuffCmdBuf.?.clearAndFree();
 }

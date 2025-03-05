@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  ZIG_VERSION: "0.14.0-dev.2606+b039a8b61"
+  ZIG_VERSION: "0.14.0"
 
 jobs:
   build-linux:
