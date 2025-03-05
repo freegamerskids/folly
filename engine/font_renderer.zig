@@ -173,7 +173,7 @@ const Font = struct {
                 data.* = RGBA32{ .r = 0, .g = 0, .b = 0, .a = 0 };
             } else {
                 const alpha = buffer.?[((y - margin) * width + (x - margin)) % buffer.?.len];
-                data.* = RGBA32{ .r = 0, .g = 0, .b = 0, .a = alpha };
+                data.* = RGBA32{ .r = 255, .g = 255, .b = 255, .a = alpha };
             }
         }
 
@@ -233,6 +233,8 @@ pub const Text = struct {
     pub fn setText(self: *Text, font_id: u32, text: []const u8, pos: rl.Vector2, size: ?u32) !void {
         var font = fonts.get(font_id) orelse return error.FontNotFound;
 
+        const newline_char_index = freetype.c.FT_Get_Char_Index(font.ft_face.handle, '\n');
+
         var text_run = try TextRun.init();
         errdefer text_run.deinit();
         text_run.font_size = @floatFromInt(size orelse 16);
@@ -243,9 +245,9 @@ pub const Text = struct {
         var texture_update = false;
         var cursor = pos;
         while (text_run.next()) |glyph| {
-            if (glyph.glyph_index == '\n') {
+            if (glyph.glyph_index == newline_char_index) {
                 cursor.x = pos.x;
-                cursor.y -= text_run.font_size;
+                cursor.y += text_run.font_size;
                 continue;
             }
 
@@ -283,7 +285,7 @@ pub const Text = struct {
             try self.built_text.glyphs.append(self.allocator, .{
                 .pos = rl.Vector2.init(
                     cursor.x + glyph.offset.x,
-                    cursor.y - (s.y - glyph.offset.y),
+                    cursor.y - glyph.offset.y,
                 ),
                 .size = s,
                 .uv = r,
@@ -319,7 +321,23 @@ pub const Text = struct {
     pub fn draw(self: *const Text, color: rl.Color) void {
         if (self.atlas_texture) |texture| {
             for (self.built_text.glyphs.items) |glyph| {
-                texture.drawPro(rl.Rectangle.init(@floatFromInt(glyph.uv.x), @floatFromInt(glyph.uv.y), @floatFromInt(glyph.uv.width), @floatFromInt(glyph.uv.height)), rl.Rectangle.init(glyph.pos.x, glyph.pos.y, glyph.size.x, glyph.size.y), glyph.pos, 0.0, color);
+                texture.drawPro(
+                    rl.Rectangle.init(
+                        @floatFromInt(glyph.uv.x), 
+                        @floatFromInt(glyph.uv.y), 
+                        @floatFromInt(glyph.uv.width), 
+                        @floatFromInt(glyph.uv.height)
+                    ),
+                    rl.Rectangle.init(
+                        glyph.pos.x, 
+                        glyph.pos.y, 
+                        glyph.size.x, 
+                        glyph.size.y
+                    ),
+                    rl.Vector2.init(0.0,0.0), 
+                    0.0, 
+                    color
+                );
             }
         }
     }

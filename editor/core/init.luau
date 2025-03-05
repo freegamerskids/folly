@@ -2,10 +2,9 @@ local util = require("util/main")
 local kc = require("util/keycodes")
 
 local font = Renderer.Font.load("./resources/JetBrainsMono-Regular.ttf")
+--local font2 = Renderer.Font.load("./resources/Raveo-Regular.ttf") -- TODO: add support for multiple fonts
 
 local buf = File.read("./editor/core/init.luau"):gsub("\r", "")
-
-local renderedOnce = false
 
 App.setMainLoop(function()
     local char = Input.Keyboard.pollChar()
@@ -26,21 +25,12 @@ App.setMainLoop(function()
 
     local width, height = App.getWindowSize()
 
-    --for i,v in pairs(buf:split("\n")) do
-   --     if v == "" then v = " " end
-    --    Renderer.drawText(font, v, 20, 20*i, 20*20, util:MakeColor(255, 255, 255, 255))
-    --end
-    
-    --Renderer.drawText(font, "fps: "..App.getFPS(), width - 200, 60, 20*20, util:MakeColor(255, 255, 255, 255))
+    Renderer.drawText(font, buf, 20, 20, 20, util:MakeColor(255, 255, 255, 255))
+   
+    Renderer.drawText(font, "fps: "..App.getFPS(), width - 200, 60, 20, util:MakeColor(255, 255, 255, 255))
 
-    --local mouse_x, mouse_y = Input.Mouse.getPosition();
-    --Renderer.drawText(font, "mouse_x: "..mouse_x.."\nmouse_y: "..mouse_y, 20, height - 80, 20*20, util:MakeColor(255,255,255,255))
+    local mouse_x, mouse_y = Input.Mouse.getPosition();
+    Renderer.drawText(font, "mouse_x: "..mouse_x.."\nmouse_y: "..mouse_y, 20, height - 80, 20, util:MakeColor(255,255,255,255))
 
-    if not renderedOnce then
-        Renderer.drawText(font, "Hello World, width: "..width.." height: "..height, 200, 200, 20, util:MakeColor(255, 255, 255, 255))
-        renderedOnce = true
-        return true
-    end
-
-    return false
+    return true
 end)
