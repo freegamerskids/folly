@@ -11,6 +11,8 @@ pub const RenderCommand = union(enum) {
     pub const Text = struct {
         text: fRenderer.Text,
         color: rl.Color,
+        hash: u64,
+        should_deinit: bool = true,
     };
 
     pub const Rect = struct {
@@ -21,6 +23,16 @@ pub const RenderCommand = union(enum) {
         color: rl.Color,
     };
 };
+
+const TextKey = struct {
+    fontId: u32,
+    text: u64,
+    size: u32,
+    x: u32,
+    y: u32,
+    color: rl.Color,
+};
+const textKeyHashFn = std.hash_map.getAutoHashFn(TextKey, struct {});
 
 var alloc: ?std.mem.Allocator = null;
 
@@ -51,6 +63,26 @@ pub fn deinit() void {
 
 pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, size: u32, color: rl.Color) !void {
     if (alloc == null) @panic("Allocator not initialized!");
+
+    const textObjHash = textKeyHashFn(.{}, .{
+        .fontId = fontId,
+        .text = std.hash_map.hashString(std.mem.span(content)),
+        .size = size,
+        .x = @bitCast(x),
+        .y = @bitCast(y),
+        .color = color
+    });
+    
+    for (passiveBuf.?.*.items) |*command| {
+        if (command.* == .text) {
+            const text = command.*.text;
+            if (text.hash == textObjHash) {
+                command.*.text.should_deinit = false;
+                try activeBuf.?.*.append(command.*);
+                return;
+            }
+        }
+    }
     
     var text = try fRenderer.Text.init(alloc.?);
     try text.setText(fontId, std.mem.span(content), .{ .x = x, .y = y }, size);
@@ -58,7 +90,9 @@ pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, size: u32, 
     try activeBuf.?.*.append(RenderCommand {
         .text = .{
             .text = text,
-            .color = color
+            .color = color,
+            .hash = textObjHash,
+            .should_deinit = true,
         }
     });
 }
@@ -81,7 +115,7 @@ pub fn endRedraw() void {
     std.mem.swap(*std.ArrayList(RenderCommand), &(passiveBuf.?), &(activeBuf.?));
 
     for (activeBuf.?.*.items) |command| {
-        if (command == .text) {
+        if (command == .text and command.text.should_deinit) {
             var text = command.text.text;
             text.deinit();
         }
