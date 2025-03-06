@@ -97,16 +97,14 @@ const TextRun = struct {
 };
 
 const Font = struct {
-    index: u32,
     ft_face: freetype.Face,
 
     bitmap: std.ArrayListUnmanaged(RGBA32) = .{},
 
-    pub fn init(index: u32, path: [*:0]const u8) !Font {
+    pub fn init(path: [*:0]const u8) !Font {
         try initFreetype();
         return .{
-            .index = index,
-            .ft_face = try ft.createFace(path, @intCast(index)),
+            .ft_face = try ft.createFace(path, 0),
         };
     }
 
@@ -189,7 +187,11 @@ var fonts: std.hash_map.AutoHashMap(u32, Font) = std.hash_map.AutoHashMap(u32, F
 
 pub fn loadFont(font_path: [*:0]const u8) !u32 {
     const font_id = fonts.count();
-    const font = try Font.init(font_id, font_path);
+    std.debug.print("font_id: {}; font: {s}\n", .{font_id, std.mem.span(font_path)});
+    const font = Font.init(font_path) catch |err| {
+        std.debug.print("[ENGINE] (Font.init) error: {any}\n", .{err});
+        return error.FontLoadError;
+    };
 
     try fonts.put(font_id, font);
     return font_id;

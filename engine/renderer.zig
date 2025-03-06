@@ -55,6 +55,18 @@ pub fn init(allocator: std.mem.Allocator) !void {
 pub fn deinit() void {
     if (drawCmdBuf == null) @panic("Command buffer not initialized!");
     
+    for (drawCmdBuf.?.items) |*cmd| {
+        if (cmd.* == .text) {
+            cmd.*.text.text.deinit();
+        }
+    }
+
+    for (redrawCmdBuf.?.items) |*cmd| {
+        if (cmd.* == .text) {
+            cmd.*.text.text.deinit();
+        }
+    }
+    
     drawCmdBuf.?.deinit();
     redrawCmdBuf.?.deinit();
 
@@ -83,6 +95,8 @@ pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, size: u32, 
             }
         }
     }
+
+    // TODO: maybe add checking of the activeBuf? we'll see
     
     var text = try fRenderer.Text.init(alloc.?);
     try text.setText(fontId, std.mem.span(content), .{ .x = x, .y = y }, size);
@@ -114,10 +128,15 @@ pub fn endRedraw() void {
 
     std.mem.swap(*std.ArrayList(RenderCommand), &(passiveBuf.?), &(activeBuf.?));
 
-    for (activeBuf.?.*.items) |command| {
-        if (command == .text and command.text.should_deinit) {
-            var text = command.text.text;
-            text.deinit();
+    for (activeBuf.?.*.items) |*command| {
+        if (command.* == .text and command.*.text.should_deinit) {
+            command.*.text.text.deinit();
+        }
+    }
+
+    for (passiveBuf.?.*.items) |*command| {
+        if (command.* == .text and !command.*.text.should_deinit) {
+            command.*.text.should_deinit = true;
         }
     }
 
