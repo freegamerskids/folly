@@ -14,9 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Zig
-        run: |
-          sudo apt install xz-utils
-          sudo sh -c 'wget -c https://zigmirror.hryx.net/zig/zig-linux-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
+        uses: mlugg/setup-zig@v1.2.1
+        with:
+          version: ${{ env.ZIG_VERSION }}
       - name: Install Dependecies
         run: sudo apt-get install -y libglx-dev libxcursor-dev libxfixes-dev libxi-dev libxinerama-dev libxrandr-dev
       - name: Build
@@ -38,12 +38,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Zig
-        run: |
-          $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://zigmirror.hryx.net/zig/zig-windows-x86_64-${{ env.ZIG_VERSION }}.zip" -OutFile "C:\zig.zip"
-          cd C:\
-          7z x zig.zip
-          Add-Content $env:GITHUB_PATH "C:\zig-windows-x86_64-${{ env.ZIG_VERSION }}\"
+        uses: mlugg/setup-zig@v1.2.1
+        with:
+          version: ${{ env.ZIG_VERSION }}
       - name: Build
         run: zig build -Doptimize=ReleaseSafe
       - name: Create Artifact
@@ -63,8 +60,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Zig
-        run: |
-          sudo sh -c 'wget -c https://zigmirror.hryx.net/zig/zig-macos-x86_64-${{ env.ZIG_VERSION }}.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
+        uses: mlugg/setup-zig@v1.2.1
+        with:
+          version: ${{ env.ZIG_VERSION }}
       - name: Build
         run: zig build -Doptimize=ReleaseSafe
         env:
