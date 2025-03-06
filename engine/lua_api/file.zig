@@ -15,11 +15,9 @@ fn lReadFile(L: *Lua) i32 {
     const realPath = std.fs.cwd().realpathAlloc(alloc, path) catch |err| return api.make_lua_err("realpathAlloc read", err);
     defer alloc.free(realPath);
 
-    std.debug.print("realPath: {s}\n", .{realPath});
-
     const file = std.fs.openFileAbsolute(realPath, .{}) catch return 0;
 
-    const fileContents = file.readToEndAlloc(alloc, 1_024*1_024) catch return 0; // 1 GiB
+    const fileContents = file.readToEndAlloc(alloc, 1_024*1_024*1_024) catch return 0; // 1 GiB
     defer alloc.free(fileContents);
 
     _ = L.pushString(fileContents);

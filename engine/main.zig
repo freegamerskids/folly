@@ -45,14 +45,12 @@ pub fn main() anyerror!void {
     rl.pollInputEvents();
 
     while (!rl.windowShouldClose()) {
-        renderer.processStuffCmdBuf();
-
         if (lua_app_api.callMainLoop(L)) renderer.endRedraw();
 
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(rl.Color.white);
+        rl.clearBackground(rl.Color.black);
         renderer.drawFrame();
     }
 }

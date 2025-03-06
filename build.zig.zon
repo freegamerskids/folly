@@ -1,18 +1,22 @@
 .{
-    .name = "folly",
+    .name = .folly,
 
     .version = "0.0.1",
 
-    .minimum_zig_version = "0.14.0-dev.2606+b039a8b61",
+    .minimum_zig_version = "0.14.0",
 
     .dependencies = .{
-        .@"raylib-zig" = .{
-            .url = "git+https://github.com/freegamerskids/raylib-zig?ref=devel#a0fefb48d17af641242ed9df3b995550055eec86",
-            .hash = "1220aac048f580b64c71c2afe8d19ca4b2e94a8a47a2153ca40507d46d311f509b04",
+        .raylib_zig = .{
+            .url = "git+https://github.com/freegamerskids/raylib-zig?ref=devel#c89dba2a8f0a5551fc11a7b45c9909950feb0806",
+            .hash = "raylib_zig-5.5.0-oQa7RQQWBQBJ4_lMMOOdpbV7g4QPHZsHMjCKMXe7VzDa",
+        },
+        .mach_freetype = .{
+            .url = "git+https://github.com/hexops/mach-freetype?ref=main#359e8721d4b988d6297534164e4976a71c46ec43",
+            .hash = "mach_freetype-0.0.0-AAAAALwUAgCt_Mzj28Tk-oZQ_a7BEKZ29rihRi7W70Io",
         },
         .ziglua = .{
-            .url = "git+https://github.com/freegamerskids/ziglua?ref=main#7646ed9fa002ea19d9d13557800ddf49f35ee43d",
-            .hash = "122040ff57e26a979dc0904aaf07e08f10389620609283cabe282b787a05e8fa8899",
+            .url = "git+https://github.com/natecraddock/ziglua?ref=main#00a3c39c587b1b853748c05b5f5c1dc68f5f3683",
+            .hash = "ziglua-0.1.0-AAAAAMDKBADubTbfjHhHI0_1IS63_IV9KEsNLsy0fLm6",
         },
     },
     .paths = .{
@@ -20,4 +24,5 @@
         "build.zig.zon",
         "engine",
     },
+    .fingerprint = 0x12494dd2307a6451,
 }
