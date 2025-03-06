@@ -4,11 +4,6 @@ const freetype = @import("freetype");
 const harfbuzz = @import("harfbuzz");
 const Atlas = @import("./atlas/Atlas.zig");
 
-const Textures = std.hash_map.AutoHashMap(u32, rl.Texture2D);
-const FTGlyphs = std.hash_map.AutoHashMap(u32, freetype.GlyphSlot);
-const HBTextGlyphInfo = std.hash_map.StringHashMap([]harfbuzz.GlyphInfo);
-const HBTextGlyphPos = std.hash_map.StringHashMap([]harfbuzz.GlyphPosition);
-
 const px_per_pt = 4.0 / 3.0;
 
 var ft: freetype.Library = undefined;

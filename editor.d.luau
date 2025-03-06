@@ -12,8 +12,15 @@ declare Renderer: {
     Font: {
         load: (filepath: string) -> FontId
     },
-    endRedraw: () -> (),
+
     drawRect: (x: number, y: number, width: number, height: number, color: Color) -> (),
+    drawRectOutline: (x: number, y: number, width: number, height: number, line_width: number, color: Color) -> (),
+    drawRectRound: (x: number, y: number, width: number, height: number, roundness: number, color: Color) -> (),
+    drawRectRoundOutline: (x: number, y: number, width: number, height: number, roundness: number, line_width: number, color: Color) -> (),
+    
+    drawCircle: (x: number, y: number, radius: number, color: Color) -> (),
+    drawCircleOutline: (x: number, y: number, radius: number, color: Color) -> (),
+
     drawText: (font: FontId, text: string, x: number, y: number, size: number, color: Color) -> (),
 }
 
