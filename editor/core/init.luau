@@ -117,5 +117,9 @@ App.setMainLoop(function()
     local fps_txt = "FPS: "..App.getFPS()
     Renderer.drawText(font, "FPS: "..App.getFPS(), width - (string.len(("FPS: "..App.getFPS())) * 13), 13, 13, util:MakeColor(200, 200, 200, 255))
 
+    Renderer.drawText(font, "TestTTWWW", 400, 20, font_size, util:MakeColor(255, 255, 255, 255))
+    local wt, ht = Renderer.measureText(font, "TestTTWWW", font_size)
+    Renderer.drawRectOutline(400, 20-ht, wt, ht, 1, util:MakeColor(255, 0, 0, 255))
+
     return true
 end)

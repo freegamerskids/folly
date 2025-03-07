@@ -3,6 +3,7 @@ const rl = @import("raylib");
 
 const api = @import("./api.zig");
 const renderer = @import("../renderer.zig");
+const font_renderer = @import("../font_renderer.zig");
 
 const Lua = ziglua.Lua;
 
@@ -113,6 +114,19 @@ fn lDrawCircleOutline(L: *Lua) i32 {
     return 0;
 }
 
+fn lMeasureText(L: *Lua) i32 {
+    const font_id = @as(u32,@intCast(L.checkInteger(1)));
+    const text = L.checkString(2);
+    const size = @as(u32,@intCast(L.checkInteger(3)));
+
+    const result = font_renderer.measureText(font_id, text, size) catch return 0;
+    
+    _ = L.pushNumber(result.x);
+    _ = L.pushNumber(result.y);
+
+    return 2;
+}
+
 const funcs = [_]ziglua.FnReg{
     .{ .name = "drawRect", .func = ziglua.wrap(lDrawRect) },
     .{ .name = "drawRectOutline", .func = ziglua.wrap(lDrawRectOutline) },
@@ -123,6 +137,7 @@ const funcs = [_]ziglua.FnReg{
     .{ .name = "drawCircleOutline", .func = ziglua.wrap(lDrawCircleOutline) },
 
     .{ .name = "drawText", .func = ziglua.wrap(lDrawText) },
+    .{ .name = "measureText", .func = ziglua.wrap(lMeasureText) },
 };
 
 const renderer_font = @import("./renderer_font.zig");
