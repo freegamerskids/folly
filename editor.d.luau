@@ -22,6 +22,7 @@ declare Renderer: {
     drawCircleOutline: (x: number, y: number, radius: number, color: Color) -> (),
 
     drawText: (font: FontId, text: string, x: number, y: number, size: number, color: Color) -> (),
+    measureText: (font: FontId, text: string, size: number) -> (number, number)
 }
 
 declare Input: {

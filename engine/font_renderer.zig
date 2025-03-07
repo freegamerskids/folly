@@ -339,3 +339,33 @@ pub const Text = struct {
         }
     }
 };
+
+pub fn measureText(font_id: u32, text: []const u8, size: ?u32) !rl.Vector2 {
+    var font = fonts.get(font_id) orelse return error.FontNotFound;
+
+    const newline_char_index = freetype.c.FT_Get_Char_Index(font.ft_face.handle, '\n');
+
+    var text_run = try TextRun.init();
+    defer text_run.deinit();
+    text_run.font_size = @floatFromInt(size orelse 16);
+
+    text_run.addText(text);
+    try font.shape(&text_run);
+
+    var max_x: f32 = 0.0;
+    var cursor = rl.Vector2.init(0.0, text_run.font_size);
+    while (text_run.next()) |glyph| {
+        if (glyph.glyph_index == newline_char_index) {
+            if (cursor.x > max_x) {
+                max_x = cursor.x;
+            }
+            cursor.x = 0.0;
+            cursor.y += text_run.font_size;
+            continue;
+        }
+
+        cursor.x += glyph.advance.x;
+    }
+
+    return cursor;
+}
