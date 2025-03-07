@@ -49,6 +49,14 @@ const GlyphKey = struct {
 
 const RegionMap = std.AutoArrayHashMapUnmanaged(GlyphKey, Atlas.Region);
 
+const AtlasMapValue = struct {
+    regions: RegionMap,
+    atlas: Atlas,
+    texture: ?rl.Texture2D = null,
+};
+
+const AtlasMap = std.AutoHashMap(u32, AtlasMapValue);
+
 const TextRun = struct {
     font_size: f32 = 16.0,
     pixel_density: u8 = 1,
@@ -198,37 +206,54 @@ pub fn deinitFonts() void {
     fonts.deinit();
 }
 
+var atlas_map: AtlasMap = AtlasMap.init(std.heap.page_allocator);
+
+pub fn deinitAtlasMap() void {
+    var it = atlas_map.valueIterator();
+    while (it.next()) |value| {
+        value.atlas.deinit(std.heap.page_allocator);
+        value.regions.deinit(std.heap.page_allocator);
+        if (value.texture) |*texture| {
+            texture.unload();
+        }
+    }
+    atlas_map.deinit();
+}
+
 pub const Text = struct {
     allocator: std.mem.Allocator,
-    atlas: Atlas,
-    atlas_texture: ?rl.Texture2D = null,
     text_run: ?TextRun = null,
-    regions: RegionMap = .{},
     built_text: struct {
         glyphs: std.ArrayListUnmanaged(BuiltGlyph) = .{},
     } = .{},
 
+    font_id: u32 = 0,
+
     pub fn init(allocator: std.mem.Allocator) !Text {
         return .{
             .allocator = allocator,
-            .atlas = try Atlas.init(allocator, 1024, .rgba), // TODO: configurable size
         };
     }
 
     pub fn deinit(self: *Text) void {
-        self.atlas.deinit(self.allocator);
-        self.regions.deinit(self.allocator);
         self.built_text.glyphs.deinit(self.allocator);
-        if (self.atlas_texture) |texture| {
-            texture.unload();
-        }
         if (self.text_run) |text_run| {
             text_run.deinit();
         }
     }
 
     pub fn setText(self: *Text, font_id: u32, text: []const u8, pos: rl.Vector2, size: ?u32) !void {
+        self.font_id = font_id;
+
         var font = fonts.get(font_id) orelse return error.FontNotFound;
+        const atlas = try atlas_map.getOrPut(font_id);
+        if (!atlas.found_existing) {
+            atlas.value_ptr.* = .{
+                .regions = .{},
+                .atlas = try Atlas.init(std.heap.page_allocator, 1024, .rgba),
+                .texture = null,
+            };
+        }
 
         const newline_char_index = freetype.c.FT_Get_Char_Index(font.ft_face.handle, '\n');
 
@@ -248,7 +273,7 @@ pub const Text = struct {
                 continue;
             }
 
-            const region = try self.regions.getOrPut(self.allocator, .{ 
+            const region = try atlas.value_ptr.*.regions.getOrPut(std.heap.page_allocator, .{ 
                 .index = glyph.glyph_index, 
                 .size = @intFromFloat(text_run.font_size)
             });
@@ -256,8 +281,8 @@ pub const Text = struct {
             if (!region.found_existing) {
                 const rendered = try font.render(self.allocator, glyph.glyph_index);
                 if (rendered.bitmap) |bitmap| {
-                    var glyph_atlas_region = try self.atlas.reserve(self.allocator, rendered.width, rendered.height);
-                    self.atlas.set(glyph_atlas_region, @as([*]const u8, @ptrCast(bitmap.ptr))[0 .. bitmap.len * 4]);
+                    var glyph_atlas_region = try atlas.value_ptr.*.atlas.reserve(std.heap.page_allocator, rendered.width, rendered.height);
+                    atlas.value_ptr.*.atlas.set(glyph_atlas_region, @as([*]const u8, @ptrCast(bitmap.ptr))[0 .. bitmap.len * 4]);
             
                     texture_update = true;
 
@@ -291,22 +316,22 @@ pub const Text = struct {
             cursor.x += glyph.advance.x;
         }
 
-        if (self.atlas_texture) |texture| {
+        if (atlas.value_ptr.*.texture) |texture| {
             if (texture_update) {
                 texture.unload();
-                self.atlas_texture = rl.loadTextureFromImage(.{
-                    .data = @constCast(self.atlas.data.ptr),
-                    .width = @intCast(self.atlas.size),
-                    .height = @intCast(self.atlas.size),
+                atlas.value_ptr.*.texture = rl.loadTextureFromImage(.{
+                    .data = @constCast(atlas.value_ptr.*.atlas.data.ptr),
+                    .width = @intCast(atlas.value_ptr.*.atlas.size),
+                    .height = @intCast(atlas.value_ptr.*.atlas.size),
                     .format = .uncompressed_r8g8b8a8,
                     .mipmaps = 1,
                 });
             }
         } else {
-            self.atlas_texture = rl.loadTextureFromImage(.{
-                .data = @constCast(self.atlas.data.ptr),
-                .width = @intCast(self.atlas.size),
-                .height = @intCast(self.atlas.size),
+            atlas.value_ptr.*.texture = rl.loadTextureFromImage(.{
+                .data = @constCast(atlas.value_ptr.*.atlas.data.ptr),
+                .width = @intCast(atlas.value_ptr.*.atlas.size),
+                .height = @intCast(atlas.value_ptr.*.atlas.size),
                 .format = .uncompressed_r8g8b8a8,
                 .mipmaps = 1,
             });
@@ -316,7 +341,12 @@ pub const Text = struct {
     }
 
     pub fn draw(self: *const Text, color: rl.Color) void {
-        if (self.atlas_texture) |texture| {
+        const atlas = atlas_map.getOrPut(self.font_id) catch return;
+        if (!atlas.found_existing) {
+            return;
+        }
+
+        if (atlas.value_ptr.*.texture) |texture| {
             for (self.built_text.glyphs.items) |glyph| {
                 texture.drawPro(
                     rl.Rectangle.init(

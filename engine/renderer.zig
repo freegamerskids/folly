@@ -109,6 +109,7 @@ pub fn deinit() void {
     redrawCmdBuf.?.deinit();
 
     fRenderer.deinitFonts();
+    fRenderer.deinitAtlasMap();
 }
 
 pub fn drawText(content: [*:0]const u8, x: f32, y: f32, fontId: u32, size: u32, color: rl.Color) !void {
