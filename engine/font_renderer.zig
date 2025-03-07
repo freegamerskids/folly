@@ -124,6 +124,7 @@ const Font = struct {
         self.ft_face.setCharSize(font_size_pt_frac, font_size_pt_frac, 0, 0) catch return error.RenderError;
 
         const hb_face = harfbuzz.Face.fromFreetypeFace(self.ft_face);
+        defer hb_face.deinit();
         const hb_font = harfbuzz.Font.init(hb_face);
         defer hb_font.deinit();
 
