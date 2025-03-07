@@ -11,40 +11,58 @@ local font_size = 20
 
 local lines = buf:split("\n")
 local cursor = {
+    touch_time = 0,
+    touched = (function(self) 
+        return ((os.clock() - self.touch_time) <= 0.25) 
+    end),
+
     y = 1, --line
     x = 3, --col
+    go_to = (function(self, x, y) 
+        if x ~= nil then
+            self.x = x
+            self:clamp_x(x)
+        end
+        if y ~= nil then
+            self.y = y
+            self:clamp_y()
+        end
+    end),
     clamp_x = (function(self, n)
         self.x = math.clamp(self.x, 1, n+1)
     end),
     clamp_y = (function(self)
         self.y = math.clamp(self.y, 1, table.maxn(lines))
+    end),
+    touch = (function(self) 
+        self.touch_time = os.clock()
+    end),
+
+    write = (function(self, char)
+        self:touch()
+        local line = lines[self.y]
+        lines[self.y] = line:sub(1, self.x-1) .. string.char(char) .. line:sub(self.x, -1)
+        self.x += 1
+        self:clamp_x(string.len(lines[self.y]))
+    end),
+    erase = (function(self)
+        self:touch()
+        if self.x == 1 then
+            return false
+        end
+        local line = lines[self.y]
+        lines[self.y] = line:sub(1, self.x-2) .. line:sub(self.x, -1)
+        self.x -= 1
+        self:clamp_x(string.len(lines[self.y]))
+        return true
     end)
 }
-
-local last_written = 0
-local function write_char(char)
-    last_written = os.clock()
-    local line = lines[cursor.y]
-    lines[cursor.y] = line:sub(1, cursor.x-1) .. string.char(char) .. line:sub(cursor.x, -1)
-    cursor.x += 1
-    cursor:clamp_x(string.len(lines[cursor.y]))
-end
-
-local function erase_char()
-    if cursor.x == 1 then
-        return false
-    end
-    local line = lines[cursor.y]
-    lines[cursor.y] = line:sub(1, cursor.x-2) .. line:sub(cursor.x, -1)
-    cursor.x -= 1
-    cursor:clamp_x(string.len(lines[cursor.y]))
-    return true
-end
 
 App.setMainLoop(function()
     local char = Input.Keyboard.pollChar()
     if char ~= 0 then
-        write_char(char)
+        cursor:touch()
+        cursor:write(char)
     end
 
     if config.user.cursor.style == "BLOCK" then
@@ -55,7 +73,7 @@ App.setMainLoop(function()
         end
     else 
         Renderer.drawRect(9+(cursor.x*9), (cursor.y-1)*20, 2, 20, 
-            if ((os.time() % 2) == 0) or ((os.clock() - last_written) <= 0.25) then util:MakeColor(255,255,255, 255) else util:MakeColor(255,255,255, 0)
+            if ((os.time() % 2) == 0) or cursor:touched() then util:MakeColor(255,255,255, 255) else util:MakeColor(255,255,255, 0)
         )
     end
 
@@ -63,30 +81,35 @@ App.setMainLoop(function()
     if key ~= 0 then
         --cursors
         if key == kc.left then
-            cursor.x -= 1
-            cursor:clamp_x(string.len(lines[cursor.y]))
+            cursor:touch()
+            cursor:go_to(cursor.x-1, nil)
         elseif key == kc.right then
-            cursor.x += 1
-            cursor:clamp_x(string.len(lines[cursor.y]))
+            cursor:touch()
+            cursor:go_to(cursor.x+1, nil)
+
         elseif key == kc.up then
-            cursor.y -= 1
-            cursor:clamp_y()
+            cursor:touch()
+            cursor:go_to(nil, cursor.y-1)
         elseif key == kc.down then
-            cursor.y += 1
-            cursor:clamp_y()
+            cursor:touch()
+            cursor:go_to(nil, cursor.y+1)
+
         elseif key == kc.backspace then
-            erase_char()
+            cursor:erase()
         elseif key == kc.enter then
-            write_char("\n")
+            cursor:write("\n")
         elseif key == kc.tab then
-            write_char(string.rep(" ", 4))
+            cursor:write(string.rep(" ", 4))
         end
     end
 
     local width, _height = App.getWindowSize()
 
     for i,v in pairs(lines) do
-        if v == "" then continue end
+        if v == "" then 
+            Renderer.drawText(font, i, 2.5, font_size * i, 15, util:MakeColor(110, 110, 110, 255))
+            continue 
+        end
         Renderer.drawText(font, i, 2.5, font_size * i, 15, util:MakeColor(200, 200, 200, 255))
         Renderer.drawText(font, v, 20, font_size * i, font_size, util:MakeColor(255, 255, 255, 255))
     end
