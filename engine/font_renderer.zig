@@ -186,11 +186,13 @@ const Font = struct {
     }
 };
 
-var fonts: std.hash_map.AutoHashMap(u32, Font) = std.hash_map.AutoHashMap(u32, Font).init(std.heap.page_allocator);
+var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
+const main_alloc = gpa.allocator();
+
+var fonts: std.hash_map.AutoHashMap(u32, Font) = std.hash_map.AutoHashMap(u32, Font).init(main_alloc);
 
 pub fn loadFont(font_path: [*:0]const u8) !u32 {
     const font_id = fonts.count();
-    std.debug.print("font_id: {}; font: {s}\n", .{font_id, std.mem.span(font_path)});
     const font = Font.init(font_path) catch |err| {
         std.debug.print("[ENGINE] (Font.init) error: {any}\n", .{err});
         return error.FontLoadError;
@@ -202,17 +204,17 @@ pub fn loadFont(font_path: [*:0]const u8) !u32 {
 
 pub fn deinitFonts() void {
     var it = fonts.valueIterator();
-    while (it.next()) |font| font.deinit(std.heap.page_allocator);
+    while (it.next()) |font| font.deinit(main_alloc);
     fonts.deinit();
 }
 
-var atlas_map: AtlasMap = AtlasMap.init(std.heap.page_allocator);
+var atlas_map: AtlasMap = AtlasMap.init(main_alloc);
 
 pub fn deinitAtlasMap() void {
     var it = atlas_map.valueIterator();
     while (it.next()) |value| {
-        value.atlas.deinit(std.heap.page_allocator);
-        value.regions.deinit(std.heap.page_allocator);
+        value.atlas.deinit(main_alloc);
+        value.regions.deinit(main_alloc);
         if (value.texture) |*texture| {
             texture.unload();
         }
@@ -220,9 +222,12 @@ pub fn deinitAtlasMap() void {
     atlas_map.deinit();
 }
 
+pub fn deinitAlloc() void {
+    _ = gpa.deinit();
+}
+
 pub const Text = struct {
     allocator: std.mem.Allocator,
-    text_run: ?TextRun = null,
     built_text: struct {
         glyphs: std.ArrayListUnmanaged(BuiltGlyph) = .{},
     } = .{},
@@ -237,9 +242,6 @@ pub const Text = struct {
 
     pub fn deinit(self: *Text) void {
         self.built_text.glyphs.deinit(self.allocator);
-        if (self.text_run) |text_run| {
-            text_run.deinit();
-        }
     }
 
     pub fn setText(self: *Text, font_id: u32, text: []const u8, pos: rl.Vector2, size: ?u32) !void {
@@ -250,7 +252,7 @@ pub const Text = struct {
         if (!atlas.found_existing) {
             atlas.value_ptr.* = .{
                 .regions = .{},
-                .atlas = try Atlas.init(std.heap.page_allocator, 1024, .rgba),
+                .atlas = try Atlas.init(main_alloc, 1024, .rgba),
                 .texture = null,
             };
         }
@@ -258,7 +260,7 @@ pub const Text = struct {
         const newline_char_index = freetype.c.FT_Get_Char_Index(font.ft_face.handle, '\n');
 
         var text_run = try TextRun.init();
-        errdefer text_run.deinit();
+        defer text_run.deinit();
         text_run.font_size = @floatFromInt(size orelse 16);
 
         text_run.addText(text);
@@ -273,7 +275,7 @@ pub const Text = struct {
                 continue;
             }
 
-            const region = try atlas.value_ptr.*.regions.getOrPut(std.heap.page_allocator, .{ 
+            const region = try atlas.value_ptr.*.regions.getOrPut(main_alloc, .{ 
                 .index = glyph.glyph_index, 
                 .size = @intFromFloat(text_run.font_size)
             });
@@ -281,7 +283,7 @@ pub const Text = struct {
             if (!region.found_existing) {
                 const rendered = try font.render(self.allocator, glyph.glyph_index);
                 if (rendered.bitmap) |bitmap| {
-                    var glyph_atlas_region = try atlas.value_ptr.*.atlas.reserve(std.heap.page_allocator, rendered.width, rendered.height);
+                    var glyph_atlas_region = try atlas.value_ptr.*.atlas.reserve(main_alloc, rendered.width, rendered.height);
                     atlas.value_ptr.*.atlas.set(glyph_atlas_region, @as([*]const u8, @ptrCast(bitmap.ptr))[0 .. bitmap.len * 4]);
             
                     texture_update = true;
@@ -336,40 +338,37 @@ pub const Text = struct {
                 .mipmaps = 1,
             });
         }
-
-        self.text_run = text_run;
     }
 
     pub fn draw(self: *const Text, color: rl.Color) void {
-        const atlas = atlas_map.getOrPut(self.font_id) catch return;
-        if (!atlas.found_existing) {
-            return;
-        }
-
-        if (atlas.value_ptr.*.texture) |texture| {
-            for (self.built_text.glyphs.items) |glyph| {
-                texture.drawPro(
-                    rl.Rectangle.init(
-                        @floatFromInt(glyph.uv.x), 
-                        @floatFromInt(glyph.uv.y), 
-                        @floatFromInt(glyph.uv.width), 
-                        @floatFromInt(glyph.uv.height)
-                    ),
-                    rl.Rectangle.init(
-                        glyph.pos.x, 
-                        glyph.pos.y, 
-                        glyph.size.x, 
-                        glyph.size.y
-                    ),
-                    rl.Vector2.init(0.0,0.0), 
-                    0.0, 
-                    color
-                );
+        const atlas_opt = atlas_map.get(self.font_id);
+        if (atlas_opt) |atlas| {
+            if (atlas.texture) |texture| {
+                for (self.built_text.glyphs.items) |glyph| {
+                    texture.drawPro(
+                        rl.Rectangle.init(
+                            @floatFromInt(glyph.uv.x), 
+                            @floatFromInt(glyph.uv.y), 
+                            @floatFromInt(glyph.uv.width), 
+                            @floatFromInt(glyph.uv.height)
+                        ),
+                        rl.Rectangle.init(
+                            glyph.pos.x, 
+                            glyph.pos.y, 
+                            glyph.size.x, 
+                            glyph.size.y
+                        ),
+                        rl.Vector2.init(0.0,0.0), 
+                        0.0, 
+                        color
+                    );
+                }
             }
         }
     }
 };
 
+// TODO: cache measurements?
 pub fn measureText(font_id: u32, text: []const u8, size: ?u32) !rl.Vector2 {
     var font = fonts.get(font_id) orelse return error.FontNotFound;
 
