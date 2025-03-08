@@ -1,10 +1,10 @@
 const std = @import("std");
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 const rl = @import("raylib");
 
 const api = @import("api.zig");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 // TODO: use this function to import fonts
 fn lRequire(L: *Lua) i32 {
@@ -16,7 +16,7 @@ fn lRequire(L: *Lua) i32 {
     if (path.len == 0) return 0;
 
     if (!std.mem.eql(u8, path[0..1], "@")) { // require in cwd
-        var info: ziglua.DebugInfo = undefined;
+        var info: lua.DebugInfo = undefined;
 
         L.getInfo(1, .{ .s = true }, &info);
 
@@ -24,29 +24,19 @@ fn lRequire(L: *Lua) i32 {
         defer alloc.free(full_src_path);
 
         const dir = std.fs.path.dirname(full_src_path).?;
-            
-        const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}/{s}.luau", .{ dir, path }) 
-            catch |err| return api.make_lua_err("allocPrintZ full_path cwd", err);
+
+        const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}/{s}.luau", .{ dir, path }) catch |err| return api.make_lua_err("allocPrintZ full_path cwd", err);
         defer alloc.free(full_path);
 
-        api.doFile(L, full_path, .{
-            .args = 0,
-            .results = 1,
-            .msg_handler = 0
-        }) catch |err| return api.make_lua_err("dofile cwd", err);
-        
+        api.doFile(L, full_path, .{ .args = 0, .results = 1, .msg_handler = 0 }) catch |err| return api.make_lua_err("dofile cwd", err);
+
         return 1;
     }
 
-    const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}.luau", .{ path[1..] }) 
-        catch |err| return api.make_lua_err("allocPrintZ full_path @", err);
+    const full_path = std.fmt.allocPrintZ(alloc, "editor/{s}.luau", .{path[1..]}) catch |err| return api.make_lua_err("allocPrintZ full_path @", err);
     defer alloc.free(full_path);
 
-    api.doFile(L, full_path, .{
-        .args = 0,
-        .results = 1,
-        .msg_handler = 0
-    }) catch |err| return api.make_lua_err("dofile @", err);
+    api.doFile(L, full_path, .{ .args = 0, .results = 1, .msg_handler = 0 }) catch |err| return api.make_lua_err("dofile @", err);
 
     return 1;
 }
@@ -57,9 +47,9 @@ fn lWait(L: *Lua) i32 {
     return 0;
 }
 
-const funcs = [_]ziglua.FnReg{
-    .{ .name = "require", .func = ziglua.wrap(lRequire) },
-    .{ .name = "wait", .func = ziglua.wrap(lWait) },
+const funcs = [_]lua.FnReg{
+    .{ .name = "require", .func = lua.wrap(lRequire) },
+    .{ .name = "wait", .func = lua.wrap(lWait) },
 };
 
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {

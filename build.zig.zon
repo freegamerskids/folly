@@ -14,9 +14,9 @@
             .url = "git+https://github.com/hexops/mach-freetype?ref=main#359e8721d4b988d6297534164e4976a71c46ec43",
             .hash = "mach_freetype-0.0.0-AAAAALwUAgCt_Mzj28Tk-oZQ_a7BEKZ29rihRi7W70Io",
         },
-        .ziglua = .{
-            .url = "git+https://github.com/natecraddock/ziglua?ref=main#00a3c39c587b1b853748c05b5f5c1dc68f5f3683",
-            .hash = "ziglua-0.1.0-AAAAAMDKBADubTbfjHhHI0_1IS63_IV9KEsNLsy0fLm6",
+        .lua_wrapper = .{
+            .url = "git+https://github.com/natecraddock/lua?ref=main#7bfb3c2b87220cdc89ef01cc99a200dad7a28e50",
+            .hash = "lua_wrapper-0.1.0-OyMC27fOBAAU3E2ueB-EWGSgsuCFQZL83pT0nQJ1ufOI",
         },
     },
     .paths = .{

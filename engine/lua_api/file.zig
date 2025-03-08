@@ -1,9 +1,9 @@
 const std = @import("std");
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 
 const api = @import("api.zig");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 fn lReadFile(L: *Lua) i32 {
     var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
@@ -17,7 +17,7 @@ fn lReadFile(L: *Lua) i32 {
 
     const file = std.fs.openFileAbsolute(realPath, .{}) catch return 0;
 
-    const fileContents = file.readToEndAlloc(alloc, 1_024*1_024*1_024) catch return 0; // 1 GiB
+    const fileContents = file.readToEndAlloc(alloc, 1_024 * 1_024 * 1_024) catch return 0; // 1 GiB
     defer alloc.free(fileContents);
 
     _ = L.pushString(fileContents);
@@ -38,14 +38,14 @@ fn lWriteFile(L: *Lua) i32 {
     const file = std.fs.openFileAbsolute(realPath, .{}) catch return 0;
 
     const contents = L.checkString(2);
-    file.writeAll(contents[0..contents.len-1]) catch return 0;
+    file.writeAll(contents[0 .. contents.len - 1]) catch return 0;
 
     return 0;
 }
 
-const funcs = [_]ziglua.FnReg{
-    .{ .name = "read", .func = ziglua.wrap(lReadFile) },
-    .{ .name = "write", .func = ziglua.wrap(lWriteFile) },
+const funcs = [_]lua.FnReg{
+    .{ .name = "read", .func = lua.wrap(lReadFile) },
+    .{ .name = "write", .func = lua.wrap(lWriteFile) },
 };
 
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {

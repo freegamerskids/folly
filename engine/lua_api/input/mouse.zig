@@ -1,7 +1,7 @@
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 const rl = @import("raylib");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 fn lGetMousePosition(L: *Lua) i32 {
     const mousePos = rl.getMousePosition();
@@ -21,9 +21,9 @@ fn lGetMouseWheelMove(L: *Lua) i32 {
     return 2;
 }
 
-const funcs = [_]ziglua.FnReg{
-    .{ .name = "getPosition", .func = ziglua.wrap(lGetMousePosition) },
-    .{ .name = "getWheelMove", .func = ziglua.wrap(lGetMouseWheelMove) },
+const funcs = [_]lua.FnReg{
+    .{ .name = "getPosition", .func = lua.wrap(lGetMousePosition) },
+    .{ .name = "getWheelMove", .func = lua.wrap(lGetMouseWheelMove) },
 };
 
 pub fn registerLuaFunctions(L: *Lua) void {

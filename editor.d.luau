@@ -49,4 +49,9 @@ declare File: {
     write: (path: string, contents: string) -> ()
 }
 
+declare JSON: {
+    parse: (json: string) -> any,
+    stringify: (any: any) -> string
+}
+
 declare function require(target: string): any

@@ -1,7 +1,7 @@
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 const rl = @import("raylib");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 fn lPollKey(L: *Lua) i32 {
     L.pushInteger(@intFromEnum(rl.getKeyPressed()));
@@ -15,9 +15,9 @@ fn lPollChar(L: *Lua) i32 {
     return 1;
 }
 
-const funcs = [_]ziglua.FnReg{
-    .{ .name = "pollKey", .func = ziglua.wrap(lPollKey) },
-    .{ .name = "pollChar", .func = ziglua.wrap(lPollChar) },
+const funcs = [_]lua.FnReg{
+    .{ .name = "pollKey", .func = lua.wrap(lPollKey) },
+    .{ .name = "pollChar", .func = lua.wrap(lPollChar) },
 };
 
 pub fn registerLuaFunctions(L: *Lua) void {

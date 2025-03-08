@@ -30,14 +30,14 @@ pub fn build(b: *std.Build) void {
     exe_mod.addImport("raylib", raylib);
     //exe_mod.addImport("raygui", raygui);
 
-    // Luau (via Ziglua)
-    const ziglua = b.dependency("ziglua", .{
+    // Luau (via lua_wrapper/ziglua)
+    const lua = b.dependency("lua_wrapper", .{
         .target = target,
         .optimize = optimize,
         .lang = .luau,
     });
 
-    exe_mod.addImport("ziglua", ziglua.module("ziglua"));
+    exe_mod.addImport("lua", lua.module("lua_wrapper"));
 
     // Freetype and Harfbuzz (via mach_freetype)
     const freetype_dep = b.dependency("mach_freetype", .{

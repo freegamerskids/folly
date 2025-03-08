@@ -1,15 +1,15 @@
 const std = @import("std");
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 const rl = @import("raylib");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 var mainLoopRef: i32 = 0;
 
 pub fn callMainLoop(L: *Lua) bool {
     if (mainLoopRef == 0) @panic("Main loop not set!");
 
-    _ = L.rawGetIndex(ziglua.registry_index, mainLoopRef);
+    _ = L.rawGetIndex(lua.registry_index, mainLoopRef);
 
     L.remove(1);
     L.pushValue(-1);
@@ -22,7 +22,7 @@ pub fn callMainLoop(L: *Lua) bool {
         const err = L.toString(-1) catch "";
 
         std.debug.print("main loop err: {s}\n", .{err});
-        
+
         return false;
     };
 
@@ -37,7 +37,7 @@ fn lSetMainLoop(L: *Lua) i32 {
 }
 
 fn lGetFPS(L: *Lua) i32 {
-    L.pushNumber(@as(f64,@floatFromInt(rl.getFPS())));
+    L.pushNumber(@as(f64, @floatFromInt(rl.getFPS())));
 
     return 1;
 }
@@ -57,11 +57,11 @@ fn lGetWindowSize(L: *Lua) i32 {
     return 2;
 }
 
-const funcs = [_]ziglua.FnReg{
-    .{ .name = "setMainLoop", .func = ziglua.wrap(lSetMainLoop) },
-    .{ .name = "getFPS", .func = ziglua.wrap(lGetFPS) },
-    .{ .name = "setFPS", .func = ziglua.wrap(lSetFPS) },
-    .{ .name = "getWindowSize", .func = ziglua.wrap(lGetWindowSize) },
+const funcs = [_]lua.FnReg{
+    .{ .name = "setMainLoop", .func = lua.wrap(lSetMainLoop) },
+    .{ .name = "getFPS", .func = lua.wrap(lGetFPS) },
+    .{ .name = "setFPS", .func = lua.wrap(lSetFPS) },
+    .{ .name = "getWindowSize", .func = lua.wrap(lGetWindowSize) },
 };
 
 pub fn registerLuaFunctions(L: *Lua, libraryName: [:0]const u8) void {

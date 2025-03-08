@@ -1,6 +1,6 @@
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 const keyboard = @import("./input/keyboard.zig");
 const mouse = @import("./input/mouse.zig");

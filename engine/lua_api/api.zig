@@ -1,5 +1,5 @@
 const std = @import("std");
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 
 // LIBRARIES
 const globals = @import("global.zig");
@@ -7,13 +7,10 @@ const renderer_api = @import("renderer.zig");
 const input_api = @import("input.zig");
 const app_api = @import("app.zig");
 const file_api = @import("file.zig");
+const json_api = @import("json.zig");
+const Lua = lua.Lua;
 
-const Lua = ziglua.Lua;
-
-const libReg = struct {
-    name: [:0]const u8,
-    func: ?*const fn(L: *Lua, libraryName: [:0]const u8) void
-};
+const libReg = struct { name: [:0]const u8, func: ?*const fn (L: *Lua, libraryName: [:0]const u8) void };
 
 const libraries = [_]libReg{
     .{ .name = "Global", .func = globals.registerLuaFunctions },
@@ -21,6 +18,7 @@ const libraries = [_]libReg{
     .{ .name = "Input", .func = input_api.registerLuaFunctions },
     .{ .name = "App", .func = app_api.registerLuaFunctions },
     .{ .name = "File", .func = file_api.registerLuaFunctions },
+    .{ .name = "JSON", .func = json_api.registerLuaFunctions },
 };
 
 pub fn loadLibraries(L: *Lua) void {
@@ -57,21 +55,21 @@ pub fn doFile(L: *Lua, filename: [:0]const u8, pcall_args: ?Lua.ProtectedCallArg
     const srcZ = try alloc.dupeZ(u8, src);
     defer alloc.free(srcZ);
 
-    const bytecode = try ziglua.compile(alloc, srcZ, .{});
+    const bytecode = try lua.compile(alloc, srcZ, .{});
     defer alloc.free(bytecode);
 
     const chunkname = try alloc.dupeZ(u8, filename);
     defer alloc.free(chunkname);
 
     if (std.mem.indexOf(u8, chunkname, "/")) |slash_pos| {
-        const after_slash = chunkname[slash_pos+1..];
-        
+        const after_slash = chunkname[slash_pos + 1 ..];
+
         if (std.mem.lastIndexOf(u8, after_slash, ".")) |dot_pos| {
             const trimmed = after_slash[0..dot_pos];
-            
+
             var result = try alloc.alloc(u8, trimmed.len + 1);
             defer alloc.free(result);
-            @memcpy(result[0..trimmed.len], trimmed); 
+            @memcpy(result[0..trimmed.len], trimmed);
             result[trimmed.len] = 0;
 
             try doBytecode(L, alloc, result, bytecode, args);
@@ -88,6 +86,6 @@ pub fn doFile(L: *Lua, filename: [:0]const u8, pcall_args: ?Lua.ProtectedCallArg
 }
 
 pub fn make_lua_err(func: [:0]const u8, err: anytype) i32 {
-    std.debug.print("lua_err in func {s}: {any}\n", .{func, err});
+    std.debug.print("lua_err in func {s}: {any}\n", .{ func, err });
     return 0;
 }

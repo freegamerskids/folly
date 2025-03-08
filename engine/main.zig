@@ -1,12 +1,12 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ziglua = @import("ziglua");
+const lua = @import("lua");
 
 const renderer = @import("./renderer.zig");
 const lua_api = @import("./lua_api/api.zig");
 const lua_app_api = @import("./lua_api/app.zig");
 
-const Lua = ziglua.Lua;
+const Lua = lua.Lua;
 
 pub fn main() anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
@@ -38,7 +38,7 @@ pub fn main() anyerror!void {
     L.openLibs();
     lua_api.loadLibraries(L);
 
-    lua_api.doFile(L,"editor/core/init.luau", null) catch |err| {
+    lua_api.doFile(L, "editor/core/init.luau", null) catch |err| {
         std.debug.print("lua err: {}\n", .{err});
     };
 
