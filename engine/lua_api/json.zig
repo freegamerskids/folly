@@ -88,7 +88,7 @@ fn luaValueToJson(L: *Lua, index: i32, allocator: std.mem.Allocator) !std.json.V
 
             L.pushValue(index);
             L.pushNil();
-            while (isArray and L.next(1)) {
+            while (isArray and L.next(-2)) {
                 L.pop(1);
                 const int = L.toInteger(-1) catch blk: {
                     isArray = false;
@@ -135,7 +135,7 @@ fn luaValueToJson(L: *Lua, index: i32, allocator: std.mem.Allocator) !std.json.V
 
                 L.pushValue(index);
                 L.pushNil();
-                while (L.next(1)) {
+                while (L.next(-2)) {
                     const value = try luaValueToJson(L, -1, allocator);
 
                     const key = try L.toString(-2);
