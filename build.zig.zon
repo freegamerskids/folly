@@ -15,7 +15,7 @@
             .hash = "mach_freetype-0.0.0-AAAAALwUAgCt_Mzj28Tk-oZQ_a7BEKZ29rihRi7W70Io",
         },
         .lua_wrapper = .{
-            .url = "git+https://github.com/natecraddock/lua?ref=main#7bfb3c2b87220cdc89ef01cc99a200dad7a28e50",
+            .url = "git+https://github.com/natecraddock/ziglua?ref=main#7bfb3c2b87220cdc89ef01cc99a200dad7a28e50",
             .hash = "lua_wrapper-0.1.0-OyMC27fOBAAU3E2ueB-EWGSgsuCFQZL83pT0nQJ1ufOI",
         },
     },
