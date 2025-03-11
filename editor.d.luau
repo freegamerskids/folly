@@ -8,6 +8,18 @@ type Color = {
 
 type FontId = number;
 
+type FetchOptions = {
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD" | "TRACE" | "CONNECT",
+    headers: { [string]: string },
+    body: string?
+}
+
+type FetchResponse = {
+    status: number,
+    body: string,
+    headers: { [string]: string }
+}
+
 declare Renderer: {
     Font: {
         load: (filepath: string) -> FontId
@@ -54,4 +66,6 @@ declare JSON: {
     stringify: (any: any) -> string
 }
 
-declare function require(target: string): any
+declare function require(target: string): any;
+
+declare function fetch(url: string, options: FetchOptions): FetchResponse;

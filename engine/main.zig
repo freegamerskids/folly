@@ -5,6 +5,7 @@ const lua = @import("lua");
 const renderer = @import("./renderer.zig");
 const lua_api = @import("./lua_api/api.zig");
 const lua_app_api = @import("./lua_api/app.zig");
+const http = @import("./http.zig");
 
 const Lua = lua.Lua;
 
@@ -28,6 +29,9 @@ pub fn main() anyerror!void {
     rl.setWindowState(.{
         .window_resizable = true,
     });
+
+    http.init(alloc);
+    defer http.deinit();
 
     try renderer.init(alloc);
     defer renderer.deinit();

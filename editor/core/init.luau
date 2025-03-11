@@ -58,6 +58,31 @@ local cursor = {
     end)
 }
 
+local res = fetch("http://echo.free.beeceptor.com/", {
+    method = "POST",
+    headers = {
+        ["Content-Type"] = "application/json",
+        ["Accept"] = "application/json",
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
+    body = JSON.stringify({
+        name = "John",
+        age = 30,
+        city = "New York",
+        is_admin = true,
+    })
+})
+
+for k,v in pairs(res) do
+    if k == "headers" then
+        for k2,v2 in pairs(v) do
+            print("header:", k2, v2)
+        end
+    else
+        print(k, v)
+    end
+end
+
 App.setMainLoop(function()
     local char = Input.Keyboard.pollChar()
     if char ~= 0 then
