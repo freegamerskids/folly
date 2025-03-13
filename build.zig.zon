@@ -6,23 +6,15 @@
     .minimum_zig_version = "0.14.0",
 
     .dependencies = .{
-        .raylib_zig = .{
-            .url = "git+https://github.com/freegamerskids/raylib-zig?ref=devel#c89dba2a8f0a5551fc11a7b45c9909950feb0806",
-            .hash = "raylib_zig-5.5.0-oQa7RQQWBQBJ4_lMMOOdpbV7g4QPHZsHMjCKMXe7VzDa",
-        },
-        .mach_freetype = .{
-            .url = "git+https://github.com/hexops/mach-freetype?ref=main#359e8721d4b988d6297534164e4976a71c46ec43",
-            .hash = "mach_freetype-0.0.0-AAAAALwUAgCt_Mzj28Tk-oZQ_a7BEKZ29rihRi7W70Io",
-        },
-        .lua_wrapper = .{
-            .url = "git+https://github.com/natecraddock/ziglua?ref=main#7bfb3c2b87220cdc89ef01cc99a200dad7a28e50",
-            .hash = "lua_wrapper-0.1.0-OyMC27fOBAAU3E2ueB-EWGSgsuCFQZL83pT0nQJ1ufOI",
+        .granite = .{
+            .url = "git+https://github.com/folly-org/granite?ref=main#729bf6c7b9a8298cac6bfbd83e9054f90f25ae5b",
+            .hash = "granite-0.0.1-gGB6ZeWRAQCQ0_5paAA4rkYa5emodOcesTX3gKSI3cwv",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
-        "engine",
+        "src",
     },
     .fingerprint = 0x12494dd2307a6451,
 }

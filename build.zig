@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const exe_mod = b.createModule(.{
-        .root_source_file = b.path("engine/main.zig"),
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -15,38 +15,13 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
-    // Raylib (via raylib-zig)
-    const raylib_dep = b.dependency("raylib_zig", .{
-        .target = target,
-        .optimize = optimize,
-        .opengl_version = .auto,
-    });
-
-    const raylib = raylib_dep.module("raylib");
-    //const raygui = raylib_dep.module("raygui"); 
-    const raylib_artifact = raylib_dep.artifact("raylib");
-
-    exe.linkLibrary(raylib_artifact);
-    exe_mod.addImport("raylib", raylib);
-    //exe_mod.addImport("raygui", raygui);
-
-    // Luau (via lua_wrapper/ziglua)
-    const lua = b.dependency("lua_wrapper", .{
-        .target = target,
-        .optimize = optimize,
-        .lang = .luau,
-    });
-
-    exe_mod.addImport("lua", lua.module("lua_wrapper"));
-
-    // Freetype and Harfbuzz (via mach_freetype)
-    const freetype_dep = b.dependency("mach_freetype", .{
+    // granite
+    const granite = b.dependency("granite", .{
         .target = target,
         .optimize = optimize,
     });
 
-    exe_mod.addImport("freetype", freetype_dep.module("mach-freetype"));
-    exe_mod.addImport("harfbuzz", freetype_dep.module("mach-harfbuzz"));
+    exe_mod.addImport("granite", granite.module("granite"));
 
     b.installArtifact(exe);
 
