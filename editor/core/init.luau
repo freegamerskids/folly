@@ -83,11 +83,14 @@ for k,v in pairs(res) do
     end
 end
 
+local last_cursor_pos_time = os.clock()
+
 App.setMainLoop(function()
     local char = Input.Keyboard.pollChar()
-    if char ~= 0 then
+    while char ~= 0 do
         cursor:touch()
         cursor:write(char)
+        char = Input.Keyboard.pollChar()
     end
 
     if config.user.cursor.style == "BLOCK" then
@@ -97,33 +100,34 @@ App.setMainLoop(function()
             Renderer.drawRectOutline(10+(cursor.x*10), (cursor.y-1)*20, 10, 20, 1, util:MakeColor(255,255,255,255))
         end
     else 
-        Renderer.drawRect(9+(cursor.x*9), (cursor.y-1)*20, 2, 20, 
+        Renderer.drawRect((cursor.x+2)*9-3, (cursor.y-1)*20+5, 2, 20, 
             if ((os.time() % 2) == 0) or cursor:touched() then util:MakeColor(255,255,255, 255) else util:MakeColor(255,255,255, 0)
         )
     end
 
-    local key = Input.Keyboard.pollKey()
-    if key ~= 0 then
-        --cursors
-        if key == kc.left then
+    -- TODO: add a pause before enabling rapid fire
+    if os.clock() - last_cursor_pos_time > 1/30 then
+        last_cursor_pos_time = os.clock()
+
+        if Input.Keyboard.isKeyDown(kc.left) then
             cursor:touch()
             cursor:go_to(cursor.x-1, nil)
-        elseif key == kc.right then
+        elseif Input.Keyboard.isKeyDown(kc.right) then
             cursor:touch()
             cursor:go_to(cursor.x+1, nil)
 
-        elseif key == kc.up then
+        elseif Input.Keyboard.isKeyDown(kc.up) then
             cursor:touch()
             cursor:go_to(nil, cursor.y-1)
-        elseif key == kc.down then
+        elseif Input.Keyboard.isKeyDown(kc.down) then
             cursor:touch()
             cursor:go_to(nil, cursor.y+1)
 
-        elseif key == kc.backspace then
+        elseif Input.Keyboard.isKeyDown(kc.backspace) then
             cursor:erase()
-        elseif key == kc.enter then
+        elseif Input.Keyboard.isKeyDown(kc.enter) then
             cursor:write("\n")
-        elseif key == kc.tab then
+        elseif Input.Keyboard.isKeyDown(kc.tab) then
             cursor:write(string.rep(" ", 4))
         end
     end

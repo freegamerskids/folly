@@ -39,7 +39,7 @@ declare Renderer: {
 
 declare Input: {
     Keyboard: {
-        pollKey: () -> number,
+        isKeyDown: (key: number) -> boolean,
         pollChar: () -> number
     },
     Mouse: {
